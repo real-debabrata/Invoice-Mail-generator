@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Invoice & Email Desk</title>
+<style>
+:root{--ink:#1c2030;--mut:#646b80;--bg:#f3f4f9;--card:#fff;--line:#dfe2ee;--ac:#4338ca;--ac2:#3730a3}
+@media(prefers-color-scheme:dark){:root{--ink:#e8eaf4;--mut:#9aa1b8;--bg:#12141d;--card:#1b1e2b;--line:#2c3044;--ac:#8b85ff;--ac2:#a5a0ff}}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+header{padding:22px 20px 6px;max-width:1120px;margin:auto}h1{margin:0;font-size:24px}header p{margin:2px 0 0;color:var(--mut)}
+main{max-width:1120px;margin:auto;padding:14px 20px 40px;display:grid;gap:18px;grid-template-columns:1fr}
+@media(min-width:920px){main{grid-template-columns:1.1fr .9fr;align-items:start}aside{position:sticky;top:14px}}
+fieldset,details,.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin:0 0 14px}
+legend{font-weight:700;padding:0 6px}summary{cursor:pointer;font-weight:700}
+.g{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:8px}
+label{display:block;font-size:13px;color:var(--mut)}.w{grid-column:1/-1}
+input,select,textarea{width:100%;margin-top:3px;padding:9px 10px;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:7px}
+input[type=checkbox]{width:auto}textarea{resize:vertical}
+:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+button{font:inherit;font-weight:600;padding:10px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button:hover{border-color:var(--ac)}button.p{background:var(--ac);border-color:var(--ac);color:#fff;width:100%;padding:13px;font-size:16px}
+button.p:hover{background:var(--ac2)}.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.row button{flex:1 1 auto}
+.tot{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;color:var(--mut)}.tot b{font-size:26px;color:var(--ink)}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;opacity:0;pointer-events:none;transition:opacity .2s;max-width:90vw;text-align:center}
+#toast.on{opacity:1}
+header{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.ov{position:fixed;inset:0;background:rgba(10,12,25,.55);overflow:auto;padding:4vh 3vw;z-index:10}.ov[hidden]{display:none}
+.sh{max-width:560px;margin:auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+.sh h2{margin:0;font-size:19px}.sh h3{margin:18px 0 2px;font-size:15px}.hd{display:flex;justify-content:space-between;align-items:center}
+.hint{font-size:12px;color:var(--mut);margin:2px 0 0}
+.prow{display:grid;grid-template-columns:1fr 78px 66px 38px;gap:6px;margin-top:6px}.prow input{margin:0}.prow button{padding:0}
+#toast{z-index:30}
+</style></head><body>
+<header><div><h1>Invoice & Email Desk</h1><p>Fill once, then get the PDF invoice, the confirmation email and a sheet record.</p></div><button onclick="$('dlg').hidden=false">⚙ Settings</button></header>
+<main>
+<div>
+<form id="f" onsubmit="return false" autocomplete="off">
+<fieldset><legend>Service</legend><div class="g">
+<label class="w">Quick pick (edit list in Settings)<select id="preset"></select></label>
+<label class="w">Service name<input id="svc" placeholder="Canva Pro – 1 Year"></label>
+<label>Price<input id="price" type="number" min="0" step="any"></label>
+<label>Currency<select id="cur"><option value="INR">INR ₹</option><option value="USD">USD $</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option><option value="AED">AED</option></select></label>
+<label>Discount type<select id="dtype"><option value="n">No discount</option><option value="p">Percent %</option><option value="f">Flat amount</option></select></label>
+<label>Discount value<input id="dval" type="number" min="0" step="any"></label>
+</div></fieldset>
+<fieldset><legend>Purchase & validity</legend><div class="g">
+<label>Purchase date<input id="pd" type="date"></label>
+<label>Duration<select id="dur"><option value="1">1 Month</option><option value="3">3 Months</option><option value="6">6 Months</option><option value="12" selected>1 Year</option><option value="24">2 Years</option><option value="0">Lifetime</option><option value="-1">Custom date</option></select></label>
+<label>Valid until<input id="vd" type="date"></label>
+</div></fieldset>
+<fieldset><legend>Customer</legend><div class="g">
+<label class="w">Name<input id="cn" placeholder="Customer name"></label>
+<label>Phone<input id="cph" type="tel"></label>
+<label>Email<input id="cem" type="email"></label>
+</div></fieldset>
+<fieldset><legend>Payment</legend><div class="g">
+<label>Payment method<select id="pm"><option>UPI</option><option>Cash</option><option>Bank Transfer</option><option>Debit/Credit Card</option><option>PayPal</option><option>Other</option></select></label>
+<label>Payment status<select id="st"><option>Paid</option><option>Pending</option><option>Partial</option></select></label>
+<label>Invoice no.<input id="inv"></label>
+</div></fieldset>
+</form>
+
+</div>
+<aside>
+<div class="panel">
+<div class="tot"><span id="brk"></span><b id="tot"></b></div>
+<button class="p" onclick="share()">Send email with PDF attached</button>
+<p class="hint" style="margin-top:6px">Best on phones: opens your share sheet, pick Gmail, Outlook or Mail and the PDF and text come attached. The buttons below open the app with the text filled in and save the PDF for you to attach.</p>
+<div class="row"><button onclick="send('m')">Phone mail app</button><button class="ap" onclick="send('g')">Gmail</button><button class="ap" onclick="send('o')">Outlook</button><button class="ap" onclick="send('y')">Yahoo</button></div>
+</div>
+<div class="panel">
+<label>Subject<input id="subj"></label>
+<label style="margin-top:8px">Email text (editable)<textarea id="body" rows="16"></textarea></label>
+<div class="row"><button onclick="pdfDl()">Download PDF</button><button onclick="pdfView()">Preview PDF</button><button onclick="save()">Save to sheet</button><button onclick="fresh()">New invoice</button></div>
+</div>
+</aside>
+</main>
+<div class="ov" id="dlg" hidden><div class="sh">
+<div class="hd"><h2>Settings</h2><button onclick="$('dlg').hidden=true">Done</button></div>
+<p class="hint">Everything saves automatically in this browser.</p>
+<h3>Your business</h3><div class="g">
+<label>Business name<input id="co" data-s></label><label>Tagline<input id="tag" data-s></label>
+<label>Business email<input id="cemail" data-s></label><label>Phone (optional)<input id="cphone" data-s></label></div>
+<h3>Services & prices</h3><p class="hint">Service name, price, months of validity (0 = lifetime).</p>
+<div id="prl"></div><div class="row"><button onclick="addP()">+ Add service</button></div>
+<h3>Terms & conditions</h3><p class="hint">Printed at the bottom of every PDF.</p><textarea id="terms" data-s rows="6"></textarea>
+<h3>Google Sheet</h3><div class="g"><label class="w">Script URL (ends with /exec)<input id="url" data-s placeholder="https://script.google.com/macros/s/…/exec"></label>
+<label>Secret key<input id="secret" data-s></label></div>
+<label style="margin-top:8px"><input type="checkbox" id="auto" data-s> Save to sheet automatically when I send or download</label>
+<div class="row"><button onclick="testSheet()">Test connection</button></div>
+</div></div>
+<div id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+const $=i=>document.getElementById(i),K='dd_s',
+CUR={INR:['₹','Rs. '],USD:['$','$'],EUR:['€','€'],GBP:['£','£'],AED:['AED ','AED ']},
+DEF={co:'Designer Deb',tag:'Graphic Design & Digital Services',cemail:'hey.designerdeb@gmail.com',cphone:'',
+terms:"1. The subscription is valid only for the period stated on this invoice.\n2. Payments are non-refundable once the service is activated.\n3. Access is for the buyer's own use and cannot be transferred or resold.\n4. We are not responsible for plan or feature changes made by the service provider.\n5. For support, contact us at the email shown on this invoice.",
+presets:"Canva Pro – 1 Year | 99 | 12\nCanva Pro – 1 Month | 49 | 1\nCanva Pro – 6 Months | 79 | 6",url:'',secret:'',auto:true,n:1};
+let S;try{S={...DEF,...JSON.parse(localStorage.getItem(K)||'{}')}}catch(e){S={...DEF}}
+const store=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}},
+iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'),
+long=s=>new Date(s+'T00:00').toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}),
+fmt=(n,s)=>s+Number(n).toLocaleString('en-IN',{maximumFractionDigits:2}),
+toast=m=>{const t=$('toast');t.textContent=m;t.className='on';clearTimeout(t.h);t.h=setTimeout(()=>t.className='',3500)},
+list=()=>S.presets.split('\n').map(l=>l.split('|').map(x=>x.trim())).filter(a=>a[0]);
+function fillPresets(){const p=$('preset');p.innerHTML='';p.add(new Option('Custom service…',''));list().forEach((a,i)=>p.add(new Option(a[0],i)))}
+function calcEnd(){const m=+$('dur').value;if(m>0){const d=new Date($('pd').value+'T00:00');d.setMonth(d.getMonth()+m);$('vd').value=iso(d)}else if(m==0)$('vd').value=''}
+function applyPreset(){const a=list()[+$('preset').value];if(!a)return;$('svc').value=a[0];$('price').value=a[1]||'';
+const m=a[2]||'12';$('dur').value=[...$('dur').options].some(o=>o.value==m)?m:'-1';calcEnd()}
+function val(){const q=i=>$(i).value.trim(),price=+q('price')||0,dv=+q('dval')||0,t=q('dtype'),
+d=Math.min(price,t=='p'?price*dv/100:t=='f'?dv:0),c=CUR[q('cur')];
+return{co:S.co,tag:S.tag,ce:S.cemail,cp:S.cphone,terms:S.terms,inv:q('inv'),svc:q('svc'),price,disc:d,total:price-d,dt:t,dv,cur:q('cur'),
+sym:c[0],ps:c[1],pd:q('pd'),vd:q('vd'),cn:q('cn'),ph:q('cph'),em:q('cem'),pm:q('pm'),st:q('st')}}
+function mail(v){return`Dear ${v.cn||'Customer'},\n\nThank you for your purchase from ${v.co}.\n\nWe are pleased to confirm that your ${v.svc} plan has been successfully activated.\n\nPurchase Details:\n• Service: ${v.svc}\n• Purchase Date: ${long(v.pd)}\n• Validity: ${v.vd?long(v.vd):'Lifetime'}\n• Payment Mode: ${v.pm}\n• ${v.st=='Paid'?'Amount Paid':'Amount Due'}: ${fmt(v.total,v.sym)}\n• Payment Status: ${v.st}\n• Purchased From: ${v.co}\n\nYour invoice for the purchase is provided along with this email for your records.\n\nThank you for choosing ${v.co}. We appreciate your trust and support.\n\nRegards,\n${v.co}\n${v.tag}\nEmail: ${v.ce}`+(v.cp?`\nPhone: ${v.cp}`:'')}
+function render(){const v=val();$('tot').textContent=fmt(v.total,v.sym);
+$('brk').textContent=v.disc?`${fmt(v.price,v.sym)} − ${fmt(v.disc,v.sym)} discount`:'Total';
+$('subj').value=`Your ${v.svc||'subscription'} is activated – Invoice ${v.inv}`;$('body').value=mail(v)}
+function pdf(v){const{jsPDF}=window.jspdf,d=new jsPDF({unit:'mm',format:'a4'}),m=n=>fmt(n,v.ps),
+T=(s,x,y,o)=>d.text(String(s),x,y,o),B=()=>d.setFont('helvetica','bold'),N=()=>d.setFont('helvetica','normal');
+d.setFillColor(67,56,202);d.rect(0,0,210,36,'F');d.setTextColor(255);B();d.setFontSize(20);T(v.co,14,17);
+N();d.setFontSize(10);T(v.tag,14,24);T([v.ce,v.cp].filter(Boolean).join('   '),14,30);
+B();d.setFontSize(24);T('INVOICE',196,22,{align:'right'});
+d.setTextColor(28,32,48);d.setFontSize(10);B();T('Billed to',14,48);T('Invoice details',130,48);N();
+T(v.cn,14,54);T(v.ph,14,60);T(v.em,14,66);T('Invoice no: '+v.inv,130,54);T('Date: '+long(v.pd),130,60);T('Status: '+v.st,130,66);
+d.setFillColor(238,239,248);d.rect(14,78,182,9,'F');B();T('Service',17,84);T('Purchased',100,84);T('Valid until',132,84);T('Amount',193,84,{align:'right'});N();
+const sv=d.splitTextToSize(v.svc,78);T(sv,17,95);T(long(v.pd),100,95);T(v.vd?long(v.vd):'Lifetime',132,95);T(m(v.price),193,95,{align:'right'});
+let y=95+sv.length*5+8;d.setDrawColor(200,203,220);d.line(14,y-5,196,y-5);
+T('Subtotal',140,y);T(m(v.price),193,y,{align:'right'});y+=7;
+if(v.disc){T('Discount'+(v.dt=='p'?` (${v.dv}%)`:''),140,y);T('- '+m(v.disc),193,y,{align:'right'});y+=7}
+B();d.setFontSize(12);T(v.st=='Paid'?'Amount Paid':'Amount Due',140,y+2);T(m(v.total),193,y+2,{align:'right'});N();d.setFontSize(10);
+y+=14;T('Payment method: '+v.pm,14,y);T('Payment status: '+v.st,14,y+6);
+y+=20;B();T('Terms & Conditions',14,y);N();d.setFontSize(9);d.setTextColor(90,96,120);T(d.splitTextToSize(v.terms,182).slice(0,22),14,y+6);
+d.setFontSize(9);T('Thank you for choosing '+v.co+'.',105,287,{align:'center'});return d}
+function ok(){const v=val();if(!v.cn||!v.svc){toast('Enter customer name and service first');return}return v}
+const pdfDl=()=>{const v=ok();if(v){pdf(v).save(v.inv+'.pdf');auto()}},
+pdfView=()=>{const v=ok();if(v)window.open(pdf(v).output('bloburl'),'_blank')},
+auto=()=>{if(S.auto&&S.url)save(true)};
+async function save(q){const v=ok();if(!v)return;if(!S.url){toast('Add the Apps Script URL in Settings first');return}
+try{const r=await fetch(S.url,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify({secret:S.secret,inv:v.inv,name:v.cn,phone:v.ph,email:v.em,service:v.svc,purchase:long(v.pd),validity:v.vd?long(v.vd):'Lifetime',price:v.price,discount:v.disc,total:v.total,currency:v.cur,mode:v.pm,status:v.st})}),j=await r.json();
+toast(j.ok?'Saved to Google Sheet ✓':'Sheet error: '+(j.error||'unknown'))}catch(e){toast('Could not reach the sheet. Check the URL and deployment access.')}}
+async function share(){const v=ok();if(!v)return;const d=pdf(v),f=new File([d.output('blob')],v.inv+'.pdf',{type:'application/pdf'});
+if(navigator.canShare&&navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:$('subj').value,text:$('body').value});auto()}catch(e){}return}
+toast('File sharing not supported here. Use Gmail/Outlook below.')}
+const UA=navigator.userAgent,AND=/Android/i.test(UA),mob=AND||/iPhone|iPad|iPod/i.test(UA)||(navigator.maxTouchPoints>1&&/Mac/.test(navigator.platform));
+function send(k){const v=ok();if(!v)return;if(!v.em){toast('Enter the customer email');return}
+pdf(v).save(v.inv+'.pdf');auto();const e=encodeURIComponent,s=e($('subj').value),b=e($('body').value),t=e(v.em),q=`subject=${s}&body=${b}`,mt=`mailto:${v.em}?${q}`,
+web={g:`https://mail.google.com/mail/?view=cm&fs=1&to=${t}&su=${s}&body=${b}`,o:`https://outlook.live.com/mail/0/deeplink/compose?to=${t}&${q}`,y:`https://compose.mail.yahoo.com/?to=${t}&${q}`},
+app={g:`googlegmail:///co?to=${t}&${q}`,o:`ms-outlook://compose?to=${t}&${q}`,y:`ymail://mail/compose?to=${t}&${q}`};
+toast('PDF saved. Attach it in the mail app, or use "Send email with PDF attached".');
+if(!mob){k=='m'?location.href=mt:window.open(web[k],'_blank');return}
+location.href=app[k]||mt;if(app[k])setTimeout(()=>{if(!document.hidden)location.href=mt},1500)}
+function fresh(){S.n++;store();['cn','cph','cem'].forEach(i=>$(i).value='');setInv();render()}
+function setInv(){$('inv').value=`INV-${iso(new Date()).replace(/-/g,'')}-${String(S.n).padStart(3,'0')}`}
+document.querySelectorAll('[data-s]').forEach(e=>e.type=='checkbox'?e.checked=!!S[e.id]:e.value=S[e.id]);
+fillPresets();drawP();$('pd').value=iso(new Date());setInv();calcEnd();render();
+document.addEventListener('input',e=>{const t=e.target;
+if(t.dataset.s!==undefined){S[t.id]=t.type=='checkbox'?t.checked:t.value;store();if(t.id=='presets')fillPresets()}
+if(t.closest('.prow')){savP();return}if(t.id=='body'||t.id=='subj')return;
+if(t.id=='pd'||t.id=='dur')calcEnd();if(t.id=='preset')applyPreset();render()});
+function mkP(a){const r=document.createElement('div');r.className='prow';
+r.innerHTML='<input placeholder="Service name"><input type="number" min="0" step="any" placeholder="Price"><input type="number" min="0" placeholder="Months"><button title="Remove" aria-label="Remove service">✕</button>';
+const c=r.children;c[0].value=a[0]||'';c[1].value=a[1]||'';c[2].value=a[2]||'';c[3].onclick=()=>{r.remove();savP()};$('prl').append(r);return r}
+function drawP(){$('prl').innerHTML='';list().forEach(mkP)}
+function addP(){mkP([]).children[0].focus()}
+function savP(){S.presets=[...document.querySelectorAll('.prow')].map(r=>[...r.querySelectorAll('input')].map(i=>i.value.replace(/\|/g,'').trim())).filter(a=>a[0]).map(a=>a.join(' | ')).join('\n');store();fillPresets()}
+async function testSheet(){if(!S.url){toast('Paste the Script URL first');return}
+try{const t=await (await fetch(S.url)).text();toast(/running/.test(t)?'Connected ✓ (the secret is checked when saving)':'URL reached, but the script did not answer as expected')}catch(e){toast('Cannot reach the script. Check the URL and that access is set to "Anyone".')}}
+if(AND)document.querySelectorAll('.ap').forEach(b=>b.hidden=true);
+document.addEventListener('keydown',e=>{if(e.key=='Escape')$('dlg').hidden=true});
+</script></body></html>
